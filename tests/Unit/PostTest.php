@@ -21,6 +21,7 @@ class PostTest extends TestCase
         $response->assertRedirect('/posts');
         $this->assertDatabaseHas('posts', [
             'title' => 'Sample Post',
+            'content' => 'This is a sample post content.',
         ]);
     }
 
@@ -60,5 +61,55 @@ class PostTest extends TestCase
         $this->assertDatabaseMissing('posts', [
             'title' => 'Post to be deleted',
         ]);
+    }
+
+    /** @test */
+    public function it_requires_a_title()
+    {
+        $response = $this->post('/posts', [
+            'title'=> '',
+            'content'=> 'test for validation test for title'
+        ]);
+        
+        $response->assertSessionHasErrors(['title']);
+    }
+    
+    /** @test */
+    public function it_requires_content()
+    {
+        $response = $this->post('/posts', [
+            'title' => 'title for content validation test',
+            'content' => '',
+        ]);
+
+        $response->assertSessionHasErrors(['content']);
+    }
+    /** @test */
+    public function it_limits_title_lenght(){
+        $response=$this->post('/posts', [
+            'title' => str_repeat('A', 256),
+            'content' => "this is a sample content it_limits_title_lenght"
+        ]);
+        $response->assertSessionHaveErrors(['title']);
+    }
+    /** @test */
+    public function an_unauthorized_person_cannot_create_a_post(){
+        $response=$this->post('/posts', [
+            'title' => 'An unauthorized title',
+            'content' => 'An unauthorized content',
+        ]);
+
+        $response->assertStatus(403);
+    }
+    /** @test */
+    public function it_displays_a_list_of_posts(){
+        $posts = Post::factory()->count(3)->create();
+
+        $response = $this->get('/post');
+
+        $response->assertStatus(200);
+        $response->assertViewHas('post', function($viewPosts) use ($posts){
+            return $viewPosts->contains($posts->first());
+        });
     }
 }

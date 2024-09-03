@@ -2,32 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\PostRequest;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 
 class PostController extends Controller
 {
     public function index(){
         $posts = Post::all(); // This retrieves all posts as a collection
-        return view('posts.index', compact('posts'));
+        return PostResource::collection($posts);
     }
 
     public function create(){
         return view('posts.create');
     }
 
-    public function store(Request $request){
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-        ]);
-
+    public function store(PostRequest $request){
         Post::create($request->all());
         return redirect()->route('posts.index');
     }
 
     public function show(Post $post){
-        return view('posts.show', compact('post'));
+        return new PostResource($post);
     }
 
     public function edit(Post $post) {
@@ -35,11 +31,7 @@ class PostController extends Controller
     }
     
 
-    public function update(Request $request, Post $post){
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-        ]);
+    public function update(PostRequest $request, Post $post){
 
         $post->update($request->all());
         return redirect()->route('posts.index');
