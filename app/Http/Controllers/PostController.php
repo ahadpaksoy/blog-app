@@ -9,8 +9,9 @@ use App\Models\Post;
 class PostController extends Controller
 {
     public function index(){
-        $posts = Post::all(); // This retrieves all posts as a collection
-        return PostResource::collection($posts);
+        $posts = Post::all();
+        PostResource::collection($posts); // This retrieves all posts as a collection
+        return view('posts.index', compact('posts'));
     }
 
     public function create(){
@@ -23,7 +24,7 @@ class PostController extends Controller
     }
 
     public function show(Post $post){
-        return new PostResource($post);
+        return view('posts.show', ['post' => $post]);
     }
 
     public function edit(Post $post) {

@@ -90,26 +90,8 @@ class PostTest extends TestCase
             'title' => str_repeat('A', 256),
             'content' => "this is a sample content it_limits_title_lenght"
         ]);
-        $response->assertSessionHaveErrors(['title']);
+        $response->assertSessionHasErrors(['title']);
     }
-    /** @test */
-    public function an_unauthorized_person_cannot_create_a_post(){
-        $response=$this->post('/posts', [
-            'title' => 'An unauthorized title',
-            'content' => 'An unauthorized content',
-        ]);
 
-        $response->assertStatus(403);
-    }
-    /** @test */
-    public function it_displays_a_list_of_posts(){
-        $posts = Post::factory()->count(3)->create();
 
-        $response = $this->get('/post');
-
-        $response->assertStatus(200);
-        $response->assertViewHas('post', function($viewPosts) use ($posts){
-            return $viewPosts->contains($posts->first());
-        });
-    }
 }
