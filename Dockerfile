@@ -1,27 +1,35 @@
+# Use the official PHP image with the necessary extensions
 FROM php:8.2-fpm
 
-WORKDIR /var/www/html
-
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libzip-dev libicu-dev libonig-dev \
-    git unzip libxml2-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    unzip \
+    libonig-dev \
+    libxml2-dev \
+    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd zip intl pdo pdo_mysql opcache \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug         
+    && docker-php-ext-install gd \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install pdo pdo_mysql
 
+# Set the working directory
+WORKDIR /var/www
+
+# Copy the Laravel application into the container
 COPY . .
 
-# install composer 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install PHP dependencies
+# Install application dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose port 9000
+# Expose port 9000 and start PHP-FPM server
 EXPOSE 9000
 
-# Command to run the application
+
 CMD ["php-fpm"]
